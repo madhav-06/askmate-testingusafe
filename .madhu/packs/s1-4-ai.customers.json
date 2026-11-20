@@ -1,0 +1,7 @@
+[
+  {"name": "Meera", "ask": "Do you have Glanza?", "wanted": "Glanza, ₹12,400, still right", "want": {"must": ["12,400"], "action": "answer"}},
+  {"name": "Nisha", "ask": "18 by 14 basin", "wanted": "Which one? New Smile or New Gold", "want": {"must": ["new smile", "new gold"], "action": "ask"}},
+  {"name": "Priya", "ask": "Do you sell tiles?", "wanted": "An honest no", "want": {"must": ["sorry"], "action": "refuse"}},
+  {"name": "Hari", "ask": "opc-180", "wanted": "Stylo, ₹9,900", "want": {"must": ["9,900"], "action": "answer"}},
+  {"name": "Arjun", "ask": "WC for kids", "wanted": "Kidz toilet, ₹9,500", "want": {"must": ["9,500"], "action": "answer"}}
+]
