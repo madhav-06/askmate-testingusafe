@@ -1,0 +1,150 @@
+{
+  "code": "s1-1-hello",
+  "title": "Sprint 1, task 1: Put AskMate online",
+  "where": "Your AskMate lives at its own web address from today. Every task you merge makes it better.",
+  "watch": [
+    "askmate.json",
+    "answer.py"
+  ],
+  "next": "Go back to the portal. Register your app's address, then your checks finish.",
+  "line": {
+    "setup": {
+      "call": "catalogue:load_catalogue",
+      "args": []
+    },
+    "call": "answer:reply",
+    "customers": []
+  },
+  "steps": [
+    {
+      "id": "connect",
+      "kind": "connect",
+      "title": "Connect Madhu to your portal account",
+      "body": "This is a new repo, so Madhu needs to know who you are again. You do this once per repo.<br>1. Click the <b>+</b> in the terminal panel to open a second terminal. Keep Madhu running in this one.<br>2. In the new terminal, type the command below. It prints a link.<br>3. Hold Ctrl and click the link, then click <b>Confirm</b> in the portal.<br>This step finishes by itself once you confirm.",
+      "cmd": "python madhu.py connect"
+    },
+    {
+      "id": "meet",
+      "kind": "say",
+      "title": "Meet HomeShine and AskMate",
+      "body": "<b>HomeShine</b> sells toilets, wash basins, kitchen sinks and taps. Its shop staff cannot remember every product, so customers wait, or get wrong answers.<br>You build <b>AskMate</b>: it answers HomeShine's customers from the real product list, and never makes one up.<br><b>How AskMate replies</b>, in four steps (open <code>answer.py</code> to see them):<br>1. Understand the question.<br>2. Find the products in <code>search.py</code>.<br>3. Decide: answer, ask which one, or say no.<br>4. Word the reply in <code>ai.py</code>.<br>Code does steps 1 to 3, so every answer can be checked. Only step 4 uses AI."
+    },
+    {
+      "id": "install",
+      "kind": "setup",
+      "title": "Install what AskMate needs",
+      "body": "AskMate is a web app made with FastAPI, like your Canteen Bot in Mission 5. Type this in your second terminal:",
+      "cmd": "python -m pip install -r requirements.txt",
+      "needs": [
+        "fastapi",
+        "uvicorn",
+        "httpx"
+      ]
+    },
+    {
+      "id": "run-it",
+      "kind": "say",
+      "title": "Run AskMate on your laptop",
+      "body": "Type the command below in your second terminal, then open <b>http://127.0.0.1:8001</b> in your browser. Type <code>hi</code>, then <code>Do you have OPC 109?</code>.<br>It runs, but it still calls itself the starter, and its answers are wrong. In this sprint you fix that, one task at a time.<br>Leave it running: it restarts by itself each time you save. Press Ctrl+C in that terminal to stop it.",
+      "cmd": "python -m uvicorn main:app --reload --port 8001"
+    },
+    {
+      "id": "find-reply",
+      "kind": "hunt",
+      "title": "Find where every reply is made",
+      "body": "Open <code>answer.py</code>. One function takes the customer's question and gives back AskMate's whole reply.",
+      "prompt": "What is that function called?",
+      "accept": [
+        "reply",
+        "reply()",
+        "def reply"
+      ],
+      "retry": "Look for the function that returns answer, action and products together."
+    },
+    {
+      "id": "predict-refuse",
+      "kind": "predict",
+      "title": "Predict first",
+      "body": "HomeShine does not sell tiles. A customer asks <code>Do you sell tiles?</code>. What will AskMate decide?",
+      "options": [
+        "answer",
+        "ask",
+        "refuse"
+      ],
+      "answer": "refuse",
+      "run": "from answer import reply\nprint(reply('Do you sell tiles?', [])['action'])",
+      "timeout": 30,
+      "explain": "Nothing was found, so AskMate says no. An honest no is far better than a made-up product."
+    },
+    {
+      "id": "line-up",
+      "kind": "talk",
+      "title": "Meet your first customers",
+      "body": "Customers say hello first. Right now AskMate tells them it is a starter, and never says which shop it works for.<br><b>Do this.</b> Click the button and read what each customer wanted."
+    },
+    {
+      "id": "name-it",
+      "kind": "write",
+      "title": "Give your AskMate its own name",
+      "file": "askmate.json",
+      "at": 2,
+      "goal": 3,
+      "body": "<b>The problem.</b> Customers say hello, and AskMate calls itself a starter. It never says which shop this is.",
+      "hints": [
+        "Read what the customers wanted. Which shop name must your greeting say?",
+        "Change both values: \"name\" and \"greeting\". The greeting must contain HomeShine, and must not contain the word starter.",
+        "Nearly there: \"greeting\": \"Hello! I am ____, HomeShine's helper. Ask me about toilets, wash basins, kitchen sinks and taps.\""
+      ],
+      "answer": {
+        "code": "{\n  \"name\": \"Shiny\",\n  \"greeting\": \"Hello! I am Shiny, HomeShine's helper. Ask me about toilets, wash basins, kitchen sinks and taps.\"\n}",
+        "why": "The greeting is the first thing every customer reads, so it says who AskMate is and whose shop it is. JSON needs double quotes around every name and value, and a comma between the two pairs."
+      },
+      "well_done": "Customers know who they are talking to now. Look at your browser tab: refresh it.",
+      "ask": "Give your AskMate its own name, and a greeting that says it works for HomeShine.",
+      "gets": "a customer who says <code>hi</code>, <code>Hello!</code> or <code>Who are you?</code>",
+      "gives": "your greeting, for example <code>Hello! I am Shiny, HomeShine's helper. Ask me about toilets, wash basins, kitchen sinks and taps.</code>",
+      "approach": [
+        "Open <code>askmate.json</code>. It holds two values: <code>name</code> and <code>greeting</code>.",
+        "Choose a short name and put it in <code>name</code>.",
+        "Write a greeting that says your name and the word HomeShine. Remove the word starter.",
+        "Keep the double quotes around each value and the comma at the end of the first line. Save."
+      ],
+      "where": "<code>askmate.json</code>, its two values. Nothing else changes.",
+      "done": "all 3 customers are happy."
+    },
+    {
+      "id": "commit",
+      "kind": "git",
+      "git": "committed",
+      "title": "Commit your change",
+      "body": "Save your work in Git with a short note. Type these in your second terminal:",
+      "cmd": "git add .\ngit commit -m \"Give AskMate its own name\""
+    },
+    {
+      "id": "push",
+      "kind": "git",
+      "git": "pushed",
+      "title": "Send it to GitHub",
+      "body": "Push sends your commit to GitHub. Your checks start there.",
+      "cmd": "git push"
+    },
+    {
+      "id": "render-account",
+      "kind": "say",
+      "title": "Make a free Render account",
+      "body": "Render runs web apps for free. Your AskMate will live there, at its own address.<br>1. Open <b>render.com</b> and click <b>Get Started</b>.<br>2. Sign up with your GitHub account. Render does not ask for a card for the free plan.<br>3. Click <b>Continue</b> when you see your Render dashboard."
+    },
+    {
+      "id": "deploy",
+      "kind": "deploy",
+      "title": "Put AskMate online",
+      "body": "In Render, click <b>New +</b>, then <b>Web Service</b>, then <b>Public Git Repository</b>. Fill in:<br>1. <b>Repository URL:</b> your repo's address on GitHub, like <code>https://github.com/jivamruta-cohort/askmate-yourlogin</code>.<br>2. <b>Branch:</b> <code>main</code>. <b>Language:</b> Python 3.<br>3. <b>Build Command:</b> <code>pip install -r requirements.txt</code><br>4. <b>Start Command:</b> <code>uvicorn main:app --host 0.0.0.0 --port $PORT</code><br>5. <b>Instance Type:</b> Free. Click <b>Deploy Web Service</b>.<br>Wait until it says <b>Live</b> (about 3 minutes). Copy the address at the top, ending in <code>.onrender.com</code>, and paste it below.<br>It deploys <code>main</code>, so it still says starter. After you merge this task, it shows your new name."
+    },
+    {
+      "id": "deploy-hook",
+      "kind": "say",
+      "title": "Tell the portal where your app lives",
+      "body": "In Render, open your service, then <b>Settings</b>. Find <b>Deploy Hook</b> and copy it. It is a secret link: never put it in your code.<br>In the portal, open <b>Your live app</b> in the left map. Paste your app's address and the deploy hook, then click <b>Save and check</b>.<br>From now on, each time you merge, the portal tells Render to put your newest code online."
+    }
+  ]
+}

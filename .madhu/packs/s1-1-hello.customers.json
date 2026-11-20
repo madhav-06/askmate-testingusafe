@@ -1,0 +1,5 @@
+[
+  {"name": "Priya", "ask": "hi", "wanted": "A hello that says the assistant's own name and that it works for HomeShine", "want": {"must": ["HomeShine"], "never": ["starter"], "action": "greet"}},
+  {"name": "Arun", "ask": "Hello!", "wanted": "To know which shop this is", "want": {"must": ["HomeShine"], "never": ["starter"]}},
+  {"name": "Meena", "ask": "Who are you?", "wanted": "The assistant's name, and HomeShine", "want": {"must": ["HomeShine"], "never": ["starter"]}}
+]
