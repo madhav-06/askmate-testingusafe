@@ -1,0 +1,12 @@
+[
+  {"name": "Ramesh", "ask": "Do you have OPC 109?", "wanted": "Amaze, ₹11,500, just once", "want": {"must": ["11,500"], "action": "answer", "products": ["OPC 109"]}},
+  {"name": "Sunita", "ask": "opc-180 price?", "wanted": "Stylo, ₹9,900", "want": {"must": ["9,900"], "action": "answer"}},
+  {"name": "Kiran", "ask": "OPC186", "wanted": "Glanza, ₹12,400", "want": {"must": ["12,400"], "action": "answer"}},
+  {"name": "Faisal", "ask": "Is OPC 123 available?", "wanted": "Liza, ₹13,200", "want": {"must": ["13,200"], "action": "answer"}},
+  {"name": "Deepa", "ask": "Opc 122", "wanted": "Lexo, ₹13,750", "want": {"must": ["13,750"], "action": "answer"}},
+  {"name": "Joseph", "ask": "wpan 110?", "wanted": "Peachy, ₹5,750", "want": {"must": ["5,750"], "action": "answer"}},
+  {"name": "Anitha", "ask": "TTB 168", "wanted": "Blaze, ₹2,925", "want": {"must": ["2,925"], "action": "answer"}},
+  {"name": "Mohan", "ask": "WPAN 136 please", "wanted": "Luna, ₹15,990", "want": {"must": ["15,990"], "action": "answer"}},
+  {"name": "Lata", "ask": "AQU 103", "wanted": "Aqua angle cock, ₹640", "want": {"must": ["₹640"], "action": "answer"}},
+  {"name": "Vinod", "ask": "Do you have OPC 999?", "wanted": "An honest no: there is no such product", "want": {"must": ["sorry"], "action": "refuse"}}
+]
