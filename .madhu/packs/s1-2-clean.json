@@ -1,0 +1,233 @@
+{
+  "code": "s1-2-clean",
+  "title": "Sprint 1, task 2: One clean product list",
+  "where": "Every answer AskMate gives comes from this list. A wrong price here is a wrong price for every customer.",
+  "watch": [
+    "catalogue.py"
+  ],
+  "next": "Go back to the portal. Your checks are running.",
+  "line": {
+    "setup": {
+      "call": "catalogue:load_catalogue",
+      "args": []
+    },
+    "call": "answer:reply",
+    "customers": []
+  },
+  "steps": [
+    {
+      "id": "line-up",
+      "kind": "talk",
+      "title": "Customers ask by product code",
+      "body": "Shop staff and plumbers ask by the code printed in HomeShine's catalogue, like <code>OPC 109</code>. Today AskMate says every price is ₹0, finds some products twice, and cannot find others at all.<br><b>Do this.</b> Click the button. Each red row shows what a customer asked, what they wanted, and what AskMate said."
+    },
+    {
+      "id": "see-mess",
+      "kind": "say",
+      "title": "Look at the messy list",
+      "body": "Open <code>data/products_raw.csv</code>. It came out of the shop's old billing software. Look for these:<br>1. Prices written five ways: <code>₹ 11,500</code>, <code>Rs. 9900/-</code>, <code>12400</code>, <code>₹13,200.00</code> and <code>Rs 13750</code>.<br>2. Codes written many ways: <code>opc-180</code>, <code>OPC186</code>, <code> OPC 123 </code>, <code>Opc 122</code>.<br>3. One empty row, and one product listed twice.<br>This is normal. Real data is always messy, and cleaning it is a real job called data engineering. You did it for the canteen in Mission 3."
+    },
+    {
+      "id": "predict-int",
+      "kind": "predict",
+      "title": "Predict first",
+      "body": "What does Python do with this?<br><code>int(\"11,500\")</code>",
+      "options": [
+        "11500",
+        "11,500",
+        "an error"
+      ],
+      "answer": "an error",
+      "run": "try:\n    print(int('11,500'))\nexcept ValueError as e:\n    print('ValueError:', e)",
+      "explain": "int() only understands digits. The comma, the rupee sign and /- must be removed first."
+    },
+    {
+      "id": "price",
+      "kind": "write",
+      "title": "Clean the prices",
+      "pass": "examples",
+      "file": "catalogue.py",
+      "at": 18,
+      "body": "<b>The problem.</b> AskMate says every price is ₹0, because <code>int()</code> cannot read <code>₹ 11,500</code>.",
+      "hints": [
+        "Look at the table. Which bits of text stop int() from working?",
+        "Remove each unwanted bit with replace(): the rupee sign, Rs., Rs, /- and the comma. For .00 at the end, int(float(text)) works.",
+        "Nearly there:  for junk in [\"₹\", \"Rs.\", \"Rs\", \"/-\", \",\"]:  then  text = text.replace(junk, ____)  , then  return int(float(text.strip()))"
+      ],
+      "answer": {
+        "code": "def clean_price(text):\n    for junk in [\"₹\", \"Rs.\", \"Rs\", \"/-\", \",\"]:\n        text = text.replace(junk, \"\")\n    return int(float(text.strip()))",
+        "why": "The loop takes each unwanted bit in turn and replaces it with nothing. Rs. comes before Rs, so the dot goes too. float() reads 13200.00, and int() then drops the .00 to give 13200."
+      },
+      "well_done": "Every price is a real number now.",
+      "examples": {
+        "call": "catalogue:clean_price",
+        "cases": [
+          {
+            "args": [
+              "₹ 11,500"
+            ],
+            "want": 11500
+          },
+          {
+            "args": [
+              "Rs. 9900/-"
+            ],
+            "want": 9900
+          },
+          {
+            "args": [
+              "12400"
+            ],
+            "want": 12400
+          },
+          {
+            "args": [
+              "₹13,200.00"
+            ],
+            "want": 13200
+          },
+          {
+            "args": [
+              "Rs 13750"
+            ],
+            "want": 13750
+          },
+          {
+            "args": [
+              "₹ 640"
+            ],
+            "want": 640
+          }
+        ]
+      },
+      "ask": "Make <code>clean_price</code> turn any way a price is written into a whole number of rupees.",
+      "gets": "a price as text from the file, like <code>\"₹ 11,500\"</code>, <code>\"Rs. 9900/-\"</code> or <code>\"₹13,200.00\"</code>",
+      "gives": "a whole number: <code>11500</code>, <code>9900</code>, <code>13200</code>",
+      "approach": [
+        "Look at the Try it table. Every price has extra bits around its digits: ₹, Rs., Rs, /- and commas.",
+        "Remove each extra bit with <code>text = text.replace(bit, \"\")</code>. A loop over a list of the bits saves typing. Put Rs. before Rs in the list, so the dot goes too.",
+        "Some prices end in <code>.00</code>. <code>float()</code> can read that, and <code>int()</code> then drops the decimals.",
+        "Return the number."
+      ],
+      "where": "<code>catalogue.py</code>, the function <code>clean_price</code>. Replace the two lines inside it. Leave <code>tidy</code> and the rest alone.",
+      "done": "every row of the Try it table is green."
+    },
+    {
+      "id": "code",
+      "kind": "write",
+      "title": "Clean the product codes",
+      "pass": "examples",
+      "file": "catalogue.py",
+      "at": 24,
+      "body": "<b>The problem.</b> The list writes codes many ways, and so do customers. <code>opc-180</code> never equals <code>OPC 180</code>.",
+      "hints": [
+        "Look at the table. Make every code look the same first: same case, no dash, no spaces. Then put one space back.",
+        "upper() and replace() make OPC180 out of all of them. The letters are the start of it: text.rstrip(\"0123456789\") gives them.",
+        "Nearly there:  text = text.upper().replace(\"-\", \"\").replace(\" \", \"\")  ,  letters = text.rstrip(\"0123456789\")  , then  return (letters + \" \" + text[len(____):]).strip()"
+      ],
+      "answer": {
+        "code": "def clean_code(text):\n    text = text.upper().replace(\"-\", \"\").replace(\" \", \"\")\n    letters = text.rstrip(\"0123456789\")\n    return (letters + \" \" + text[len(letters):]).strip()",
+        "why": "First every code is made the same: capitals, no dash, no spaces, so all of them become OPC180. rstrip removes the digits from the end, which leaves just the letters. The digits are what comes after the letters. Then one space goes between them."
+      },
+      "well_done": "Every code is written one way now.",
+      "examples": {
+        "call": "catalogue:clean_code",
+        "cases": [
+          {
+            "args": [
+              "OPC 109"
+            ],
+            "want": "OPC 109"
+          },
+          {
+            "args": [
+              "opc-180"
+            ],
+            "want": "OPC 180"
+          },
+          {
+            "args": [
+              "OPC186"
+            ],
+            "want": "OPC 186"
+          },
+          {
+            "args": [
+              " OPC 123 "
+            ],
+            "want": "OPC 123"
+          },
+          {
+            "args": [
+              "ttb 168"
+            ],
+            "want": "TTB 168"
+          },
+          {
+            "args": [
+              "WPAN136"
+            ],
+            "want": "WPAN 136"
+          }
+        ]
+      },
+      "ask": "Make <code>clean_code</code> write every product code the same way: capital letters, one space, then the number.",
+      "gets": "a code as people type it: <code>\"opc-180\"</code>, <code>\"OPC180\"</code> or <code>\" OPC 180 \"</code>",
+      "gives": "<code>\"OPC 180\"</code> for all of them",
+      "approach": [
+        "First make every version look the same: capital letters with <code>upper()</code>, then remove the dash and the spaces. All of them become <code>OPC180</code>.",
+        "Find the letters at the start: <code>letters = text.rstrip(\"0123456789\")</code> removes the digits from the end.",
+        "The digits are what comes after the letters: <code>text[len(letters):]</code>.",
+        "Return the letters, one space, and the digits. <code>strip()</code> at the end keeps an empty code empty."
+      ],
+      "where": "<code>catalogue.py</code>, the function <code>clean_code</code>. AskMate cleans the codes customers type with this same function.",
+      "done": "every row of the Try it table is green."
+    },
+    {
+      "id": "rows",
+      "kind": "write",
+      "title": "Skip empty and repeated rows",
+      "file": "catalogue.py",
+      "at": 42,
+      "goal": 10,
+      "body": "<b>The problem.</b> Ask for <code>OPC 109</code> and AskMate asks \"Did you mean Amaze or Amaze?\": the list has that product twice. It also reads the empty row as a product.",
+      "hints": [
+        "You need to remember which codes you have already added. Which kind of collection is good at answering \"have I seen this before?\"",
+        "Make an empty list and an empty set. Loop over the rows: skip an empty code, skip a code already in the set, otherwise add the product to the list and its code to the set.",
+        "Nearly there: inside the loop,  if not row[\"code\"].strip(): continue  ,  product = product_from(row)  ,  if product[\"code\"] in seen: ____  , then  seen.add(product[\"code\"])  and  products.append(product)"
+      ],
+      "answer": {
+        "code": "def load_catalogue(path=RAW):\n    \"\"\"Every product in the file, cleaned.\"\"\"\n    with open(path, encoding=\"utf-8\", newline=\"\") as f:\n        rows = list(csv.DictReader(f))\n    products, seen = [], set()\n    for row in rows:\n        if not row[\"code\"].strip():\n            continue\n        product = product_from(row)\n        if product[\"code\"] in seen:\n            continue\n        seen.add(product[\"code\"])\n        products.append(product)\n    return products",
+        "why": "A set answers \"have I seen this code?\" instantly. continue jumps to the next row, so an empty row or a repeat is never added. The code is checked after cleaning, so OPC 109 and opc-109 count as the same product."
+      },
+      "well_done": "One clean list: 35 products, each once, each with its real price.",
+      "ask": "Make <code>load_catalogue</code> skip empty rows, and skip a product it has already added.",
+      "gets": "the 37 rows of <code>data/products_raw.csv</code>, with one empty row and one repeated row",
+      "gives": "a list of 35 clean products, each one once",
+      "approach": [
+        "Before the loop, make an empty list for the products and an empty set for the codes you have seen.",
+        "Go through the rows one by one. If the row's code is empty, skip the row with <code>continue</code>.",
+        "Turn the row into a product with <code>product_from(row)</code>. If its code is already in your set, skip it too.",
+        "Otherwise add its code to the set and the product to the list. After the loop, return the list."
+      ],
+      "where": "<code>catalogue.py</code>, the function <code>load_catalogue</code>. Keep its first lines, which read the file.",
+      "done": "all 10 customers are happy."
+    },
+    {
+      "id": "commit",
+      "kind": "git",
+      "git": "committed",
+      "title": "Commit your change",
+      "body": "Type these in your second terminal:",
+      "cmd": "git add .\ngit commit -m \"Clean HomeShine's product list\""
+    },
+    {
+      "id": "push",
+      "kind": "git",
+      "git": "pushed",
+      "title": "Send it to GitHub",
+      "body": "Push, and your checks start on GitHub.",
+      "cmd": "git push"
+    }
+  ]
+}
