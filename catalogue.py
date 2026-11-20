@@ -7,10 +7,7 @@ codes too, and some rows are empty or repeated. Every reply AskMate gives comes 
 import csv
 from pathlib import Path
 
-from sqlalchemy import text
-
 RAW = Path(__file__).parent / "data" / "products_raw.csv"
-
 
 def tidy(text):
     """'  New   Smile ' becomes 'New Smile': no spaces at the ends, one space between words."""
