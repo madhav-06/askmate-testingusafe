@@ -7,6 +7,8 @@ codes too, and some rows are empty or repeated. Every reply AskMate gives comes 
 import csv
 from pathlib import Path
 
+from sqlalchemy import text
+
 RAW = Path(__file__).parent / "data" / "products_raw.csv"
 
 
@@ -16,14 +18,15 @@ def tidy(text):
 
 
 def clean_price(text):
-    """'₹ 11,500' and 'Rs. 9900/-' must both become a whole number of rupees, like 11500."""
-    text = tidy(text)
-    return int(text) if text.isdigit() else 0
+    for junk in ["₹", "Rs.", "Rs", "/-", ","]:
+        text = text.replace(junk, "")
+    return int(float(text.strip()))
 
 
 def clean_code(text):
-    """'opc-180', 'OPC180' and ' OPC 180 ' must all become 'OPC 180'."""
-    return tidy(text)
+    text = text.upper().replace("-", "").replace(" ", "")
+    letters = text.rstrip("0123456789")
+    return (letters + " " + text[len(letters):]).strip()
 
 
 def product_from(row):
@@ -43,4 +46,13 @@ def load_catalogue(path=RAW):
     """Every product in the file, cleaned."""
     with open(path, encoding="utf-8", newline="") as f:
         rows = list(csv.DictReader(f))
-    return [product_from(row) for row in rows]
+    products, seen = [], set()
+    for row in rows:
+        if not row["code"].strip():
+            continue
+        product = product_from(row)
+        if product["code"] in seen:
+            continue
+        seen.add(product["code"])
+        products.append(product)
+    return products
