@@ -1,0 +1,370 @@
+{
+  "code": "s1-3-find",
+  "title": "Sprint 1, task 3: Find what customers mean",
+  "where": "This is the heart of AskMate: finding the right product however a customer asks.",
+  "watch": [
+    "search.py"
+  ],
+  "next": "Go back to the portal. Your checks are running.",
+  "line": {
+    "setup": {
+      "call": "catalogue:load_catalogue",
+      "args": []
+    },
+    "call": "answer:reply",
+    "customers": []
+  },
+  "steps": [
+    {
+      "id": "line-up",
+      "kind": "talk",
+      "title": "Customers ask in their own words",
+      "body": "Real customers never type a product code. They say <code>rimless toilet</code>, <code>commode</code> or <code>18 by 14 basin</code>. Today AskMate says no to all of them.<br><b>Do this.</b> Click the button and read what each customer wanted."
+    },
+    {
+      "id": "plan",
+      "kind": "say",
+      "title": "How AskMate will find products",
+      "body": "You did this for dishes in Mission 4. Now you do it for 35 products, in <code>search.py</code>:<br>1. <code>words(text)</code> turns a question into clean words, and drops small words like <code>do</code> and <code>the</code>.<br>2. <code>SYNONYMS</code> turns a customer's word into the word the list uses: <code>commode</code> becomes <code>toilet</code>.<br>3. <code>score(asked, product)</code> counts how many of the customer's words describe a product.<br>4. <code>find</code> keeps the products with the best score. Then AskMate answers if there is one, asks which one if there are a few, and says no if there are none.<br>Steps 1 to 3 have a Try it table: all green means done. Step 4 is done when the customers are happy."
+    },
+    {
+      "id": "predict-sets",
+      "kind": "predict",
+      "title": "Predict first",
+      "body": "How many words do these two sets share?<br><code>{\"rimless\", \"toilet\"} &amp; {\"lexo\", \"one\", \"piece\", \"toilet\", \"rimless\"}</code>",
+      "options": [
+        "0",
+        "1",
+        "2"
+      ],
+      "answer": "2",
+      "run": "print(len({'rimless', 'toilet'} & {'lexo', 'one', 'piece', 'toilet', 'rimless'}))",
+      "explain": "& keeps the words that are in both sets. That count is exactly the score you will write."
+    },
+    {
+      "id": "words",
+      "kind": "write",
+      "title": "Turn a question into clean words",
+      "pass": "examples",
+      "file": "search.py",
+      "at": 18,
+      "body": "<b>The problem.</b> <code>toilet?</code> with a question mark never equals <code>toilet</code>, and <code>18 by 14</code> is three words, not one size.",
+      "hints": [
+        "Do it in the order of the list. Sizes first, before the spaces are gone.",
+        "lower(), then replace(\" by \", \"x\") and replace(\" x \", \"x\"). A loop replaces each mark with a space. A list comprehension keeps the words not in STOPWORDS.",
+        "Nearly there:  text = text.lower().replace(\" by \", \"x\").replace(\" x \", \"x\")  ,  for mark in \"?!.,()\": text = text.replace(mark, \" \")  , then  return [w for w in text.split() if w not in ____]"
+      ],
+      "answer": {
+        "code": "def words(text):\n    \"\"\"The words in a question or a product, ready to compare.\"\"\"\n    text = text.lower().replace(\" by \", \"x\").replace(\" x \", \"x\")\n    for mark in \"?!.,()\":\n        text = text.replace(mark, \" \")\n    return [w for w in text.split() if w not in STOPWORDS]",
+        "why": "Sizes are joined first, while 18 and 14 still have spaces around by. Each mark becomes a space, so (18x14x7 inch) splits into clean words. The list comprehension keeps only the words that tell you something."
+      },
+      "well_done": "Every question is clean words now, and so is every product.",
+      "examples": {
+        "call": "search:words",
+        "cases": [
+          {
+            "args": [
+              "Do you have a rimless toilet?"
+            ],
+            "want": [
+              "rimless",
+              "toilet"
+            ]
+          },
+          {
+            "args": [
+              "18 by 14 basin"
+            ],
+            "want": [
+              "18x14",
+              "basin"
+            ]
+          },
+          {
+            "args": [
+              "16 x 12 Wash Basin!"
+            ],
+            "want": [
+              "16x12",
+              "wash",
+              "basin"
+            ]
+          },
+          {
+            "args": [
+              "Price of GLANZA, please."
+            ],
+            "want": [
+              "glanza"
+            ]
+          },
+          {
+            "args": [
+              "460x355x185 mm (18x14x7 inch)"
+            ],
+            "want": [
+              "460x355x185",
+              "mm",
+              "18x14x7",
+              "inch"
+            ]
+          }
+        ]
+      },
+      "ask": "Make <code>words</code> turn a sentence into clean words that AskMate can compare.",
+      "gets": "a question or a product's text, like <code>\"Do you have a rimless toilet?\"</code>",
+      "gives": "a list of the useful words: <code>[\"rimless\", \"toilet\"]</code>",
+      "approach": [
+        "Make the text small letters.",
+        "Join sizes while they still have spaces: replace <code>\" by \"</code> and <code>\" x \"</code> with <code>\"x\"</code>, so 18 by 14 becomes 18x14.",
+        "Replace each of <code>? ! . , ( )</code> with a space.",
+        "Split into words, and keep only the words that are not in <code>STOPWORDS</code> (small words like do, the and have)."
+      ],
+      "where": "<code>search.py</code>, the function <code>words</code>.",
+      "done": "every row of the Try it table is green."
+    },
+    {
+      "id": "synonyms",
+      "kind": "write",
+      "title": "Teach AskMate the words customers use",
+      "pass": "examples",
+      "file": "search.py",
+      "at": 14,
+      "body": "<b>The problem.</b> Customers say <code>commode</code>, <code>WC</code> or <code>faucet</code>. HomeShine's list only says <code>toilet</code> and <code>tap</code>.",
+      "hints": [
+        "A dictionary maps one thing to another, like {\"key\": \"value\"}. Look at the table: which words must become which?",
+        "You need commode and wc to become toilet, and faucet and taps to become tap. Plurals help too: toilets, basins, sinks.",
+        "Nearly there:  SYNONYMS = {\"commode\": \"toilet\", \"wc\": \"toilet\", \"toilets\": \"toilet\", \"faucet\": \"tap\", \"taps\": ____, \"basins\": \"basin\", \"sinks\": \"sink\"}"
+      ],
+      "answer": {
+        "code": "SYNONYMS = {\"commode\": \"toilet\", \"wc\": \"toilet\", \"toilets\": \"toilet\", \"faucet\": \"tap\", \"taps\": \"tap\", \"basins\": \"basin\", \"sinks\": \"sink\"}",
+        "why": "meaning(word) looks the word up in SYNONYMS. If it is there, it gives the list's word; if not, it gives the word back unchanged, so basin stays basin."
+      },
+      "well_done": "AskMate speaks the customers' language now.",
+      "examples": {
+        "call": "search:meaning",
+        "cases": [
+          {
+            "args": [
+              "commode"
+            ],
+            "want": "toilet"
+          },
+          {
+            "args": [
+              "wc"
+            ],
+            "want": "toilet"
+          },
+          {
+            "args": [
+              "faucet"
+            ],
+            "want": "tap"
+          },
+          {
+            "args": [
+              "taps"
+            ],
+            "want": "tap"
+          },
+          {
+            "args": [
+              "basin"
+            ],
+            "want": "basin"
+          }
+        ]
+      },
+      "ask": "Fill the <code>SYNONYMS</code> dictionary, so a customer's word becomes the word HomeShine's list uses.",
+      "gets": "a customer's word, like <code>\"commode\"</code> (the function <code>meaning</code> looks it up for you)",
+      "gives": "the list's word: <code>\"toilet\"</code>. A word that is not in the dictionary comes back unchanged.",
+      "approach": [
+        "Look at the Try it table: which words must become which?",
+        "Each key is a customer's word, and each value is the list's word: <code>\"commode\": \"toilet\"</code>.",
+        "Add the plurals too: toilets, taps, basins and sinks.",
+        "Keep the whole dictionary on one line, then save."
+      ],
+      "where": "<code>search.py</code>, the line <code>SYNONYMS = {}</code>. Leave <code>meaning</code> alone: it already uses your dictionary.",
+      "done": "every row of the Try it table is green."
+    },
+    {
+      "id": "score",
+      "kind": "write",
+      "title": "Score each product",
+      "pass": "examples",
+      "file": "search.py",
+      "at": 43,
+      "body": "<b>The problem.</b> To find the best product, AskMate needs a number for how well each product matches.",
+      "hints": [
+        "You predicted this a few steps ago. Which operator keeps only what two sets share?",
+        "Turn asked into a set, use & with product_words(product), and count what is left with len().",
+        "Nearly there:  return len(set(asked) & ____(product))"
+      ],
+      "answer": {
+        "code": "def score(asked, product):\n    \"\"\"How many of the customer's words describe this product.\"\"\"\n    return len(set(asked) & product_words(product))",
+        "why": "set(asked) & product_words(product) keeps the words found in both, and len() counts them. Two shared words score 2, so a better match always scores higher."
+      },
+      "well_done": "Every product gets a score for every question.",
+      "examples": {
+        "call": "search:score",
+        "cases": [
+          {
+            "show": "[\"rimless\", \"toilet\"], Lexo",
+            "args": [
+              [
+                "rimless",
+                "toilet"
+              ],
+              {
+                "name": "Lexo",
+                "category": "One piece toilet",
+                "features": "Syphonic flushing, rimless, 3D flushing",
+                "size": "650x350x730 mm",
+                "colour": "White"
+              }
+            ],
+            "want": 2
+          },
+          {
+            "show": "[\"rimless\", \"toilet\"], Glanza",
+            "args": [
+              [
+                "rimless",
+                "toilet"
+              ],
+              {
+                "name": "Glanza",
+                "category": "One piece toilet",
+                "features": "Washdown flushing",
+                "size": "650x355x725 mm",
+                "colour": "White"
+              }
+            ],
+            "want": 1
+          },
+          {
+            "show": "[\"18x14\", \"basin\"], New Smile",
+            "args": [
+              [
+                "18x14",
+                "basin"
+              ],
+              {
+                "name": "New Smile",
+                "category": "Wash basin",
+                "features": "Wall mounted",
+                "size": "460x355x185 mm (18x14x7 inch)",
+                "colour": "White"
+              }
+            ],
+            "want": 2
+          },
+          {
+            "show": "[\"pizza\"], Glanza",
+            "args": [
+              [
+                "pizza"
+              ],
+              {
+                "name": "Glanza",
+                "category": "One piece toilet",
+                "features": "Washdown flushing",
+                "size": "650x355x725 mm",
+                "colour": "White"
+              }
+            ],
+            "want": 0
+          }
+        ]
+      },
+      "ask": "Make <code>score</code> count how many of the customer's words describe one product.",
+      "gets": "the customer's words, like <code>[\"rimless\", \"toilet\"]</code>, and one product",
+      "gives": "a number: 2 for Lexo (it is rimless and a toilet), 1 for Glanza (only a toilet), 0 for no match",
+      "approach": [
+        "<code>product_words(product)</code> already gives you the product's words, as a set.",
+        "Make a set of the customer's words too: <code>set(asked)</code>.",
+        "<code>&amp;</code> keeps only the words that are in both sets. You predicted this a few steps ago.",
+        "Count what is left with <code>len()</code>, and return it."
+      ],
+      "where": "<code>search.py</code>, the function <code>score</code>. It needs only one line.",
+      "done": "every row of the Try it table is green."
+    },
+    {
+      "id": "find",
+      "kind": "write",
+      "file": "search.py",
+      "at": 54,
+      "goal": 13,
+      "title": "Find the best products",
+      "body": "<b>The problem.</b> <code>find</code> only understands product codes, so AskMate says no to <code>rimless toilet</code>.",
+      "hints": [
+        "This is Mission 4's best_dishes again, with products. Which products should a customer see if three of them score 2 and the rest score 1?",
+        "First make a list of what each of the customer's words means. Then a dict from each product's code to its score: max() of its values is the best score. Keep the products with that score, and sort them by price with sorted() and a key.",
+        "Nearly there: after the code part,  asked = [meaning(w) for w in words(question)]  ,  scores = {p[\"code\"]: score(asked, p) for p in products}  ,  best = max(scores.values(), default=0)  ,  if best == 0: return []  ,  found = sorted((p for p in products if scores[p[\"code\"]] == ____), key=lambda p: p[\"price\"])  ,  return [p[\"code\"] for p in found]"
+      ],
+      "answer": {
+        "code": "def find(question, products):\n    \"\"\"The codes of the products the customer means, cheapest first.\"\"\"\n    wanted = codes_in(question)\n    if wanted:\n        return [p[\"code\"] for p in products if p[\"code\"] in wanted]\n    asked = [meaning(w) for w in words(question)]\n    scores = {p[\"code\"]: score(asked, p) for p in products}\n    best = max(scores.values(), default=0)\n    if best == 0:\n        return []\n    found = sorted((p for p in products if scores[p[\"code\"]] == best), key=lambda p: p[\"price\"])\n    return [p[\"code\"] for p in found]",
+        "why": "Every product gets a score, and only the best ones are kept, so a product that matches one word never beats one that matches two. A best score of 0 means nothing matched, and an empty list makes AskMate say an honest no. Sorting by price shows the cheapest first."
+      },
+      "well_done": "AskMate understands how people really ask.",
+      "ask": "Make <code>find</code> return the products that match the customer's words best, cheapest first.",
+      "gets": "the question, like <code>\"18 by 14 basin\"</code>, and all 35 products",
+      "gives": "a list of product codes, like <code>[\"WBSN 277\", \"WBSN 278\"]</code>, or an empty list when nothing matches",
+      "approach": [
+        "Keep the product code part at the top: if the customer typed a code, that still wins.",
+        "Turn the question into words, and each word into its meaning: <code>asked = [meaning(w) for w in words(question)]</code>.",
+        "Score every product and find the best score. If the best score is 0, nothing matched: return an empty list.",
+        "Keep every product with the best score, sort them by price, and return their codes."
+      ],
+      "where": "<code>search.py</code>, the function <code>find</code>. After it, <code>decide</code> answers if there is 1 product, asks which one if there are more, and says no if there are none.",
+      "done": "all 13 customers are happy."
+    },
+    {
+      "id": "cheapest",
+      "kind": "write",
+      "boss": true,
+      "file": "search.py",
+      "at": 54,
+      "goal": 14,
+      "title": "Boss Customer: the cheapest one",
+      "body": "<b>A Boss Customer arrives.</b> Vikram asks for <code>the cheapest wall hung toilet</code>. AskMate finds five and asks which one, but Vikram already said which: the cheapest.",
+      "hints": [
+        "Your found list is sorted by price. Where in it is the cheapest product?",
+        "Just before the return, check if \"cheapest\" is in asked. If it is, keep only the first item of found with a slice.",
+        "Nearly there: before the return,  if \"cheapest\" in asked: found = found[:____]"
+      ],
+      "answer": {
+        "code": "def find(question, products):\n    \"\"\"The codes of the products the customer means, cheapest first.\"\"\"\n    wanted = codes_in(question)\n    if wanted:\n        return [p[\"code\"] for p in products if p[\"code\"] in wanted]\n    asked = [meaning(w) for w in words(question)]\n    scores = {p[\"code\"]: score(asked, p) for p in products}\n    best = max(scores.values(), default=0)\n    if best == 0:\n        return []\n    found = sorted((p for p in products if scores[p[\"code\"]] == best), key=lambda p: p[\"price\"])\n    if \"cheapest\" in asked:\n        found = found[:1]\n    return [p[\"code\"] for p in found]",
+        "why": "found is already cheapest first, so found[:1] is a list with only the cheapest product. One product means AskMate answers instead of asking."
+      },
+      "well_done": "Vikram got his answer. Customers who tell you what they want should never be asked again.",
+      "ask": "When the customer says cheapest, give back only the cheapest product.",
+      "gets": "a question with the word cheapest, like <code>\"the cheapest wall hung toilet\"</code>",
+      "gives": "a list with one code: <code>[\"WPAN 130\"]</code> (Alitis, ₹4,400)",
+      "approach": [
+        "Your list in <code>find</code> is already sorted cheapest first.",
+        "Just before the return, check if <code>\"cheapest\"</code> is one of the customer's words.",
+        "If it is, keep only the first product: the slice <code>[:1]</code> gives a list with just the first item."
+      ],
+      "where": "<code>search.py</code>, inside <code>find</code>, just before its last line.",
+      "done": "all 14 customers are happy."
+    },
+    {
+      "id": "commit",
+      "kind": "git",
+      "git": "committed",
+      "title": "Commit your change",
+      "body": "Type these in your second terminal:",
+      "cmd": "git add .\ngit commit -m \"Find products from customers' own words\""
+    },
+    {
+      "id": "push",
+      "kind": "git",
+      "git": "pushed",
+      "title": "Send it to GitHub",
+      "body": "Push, and your checks start on GitHub.",
+      "cmd": "git push"
+    }
+  ]
+}
