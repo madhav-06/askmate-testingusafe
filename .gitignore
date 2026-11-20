@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+# Your AI keys live in .env. It must never reach GitHub.
+.env
+# Madhu's memory and sign-in stay on this machine. Mission steps in .madhu/packs/ are committed.
+.madhu/state.json
+.madhu/state.json.tmp
+.madhu/snap/
+.madhu/token
+.madhu/config.json

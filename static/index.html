@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AskMate</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main>
+  <header>
+    <h1 id="name">AskMate</h1>
+    <p class="dim">Ask about HomeShine's toilets, wash basins, kitchen sinks and taps.</p>
+  </header>
+  <section id="chat" aria-live="polite">
+    <div class="msg bot">Hello! Try: <em>Do you have a rimless toilet?</em> or <em>18 by 14 wash basin</em>.</div>
+  </section>
+  <div id="suggestions" class="suggestions"></div>
+  <p id="resting" class="note" hidden>Our AI helper is resting. Answers come straight from the product list.</p>
+  <form id="ask">
+    <label for="q" class="sr">Your question</label>
+    <input id="q" name="q" autocomplete="off" maxlength="500" placeholder="Type your question" required>
+    <button>Ask</button>
+  </form>
+</main>
+<script src="/static/chat.js"></script>
+</body>
+</html>

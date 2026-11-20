@@ -1,0 +1,33 @@
+name: Checks
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  customers:
+    name: Customer Line
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      ASKMATE_LLM: fake          # checks use AskMate's own sentences: no key, the same answer every time
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -q -r requirements.txt
+      - name: No keys or passwords in the code
+        run: python -m madhukit.secret_scan
+      - name: Official tests
+        if: always()
+        run: python -m pytest -q
+      - name: Serve every customer
+        if: always()
+        run: python -m madhukit.ci_report
+        env:
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
