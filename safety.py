@@ -12,7 +12,7 @@ CODE = re.compile(r"\b([A-Z]{2,5}) ?(\d{3})\b")
 
 def prices_in(text):
     """Every price written in the text, as whole numbers: '₹12,400 or Rs 9,900' gives [12400, 9900]."""
-    return []
+    return [int(p.replace(",", "")) for p in PRICE.findall(text)]
 
 
 def codes_in_text(text):
@@ -22,4 +22,9 @@ def codes_in_text(text):
 
 def is_safe(text, facts):
     """True when every price and every product code in the text is one of the facts."""
-    return True
+    allowed_prices = set()
+    for f in facts:
+        allowed_prices.update(prices_in(f["price"]))
+    allowed_codes = {f["code"] for f in facts}
+    return set(prices_in(text)) <= allowed_prices and set(codes_in_text(text)) <= allowed_codes
+
