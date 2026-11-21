@@ -14,12 +14,18 @@ GOLD = Path(__file__).parent / "data" / "gold.json"
 
 def is_right(reply, want):
     """True when AskMate decided what the test question wants: the same action, and every product it should name."""
-    return False
+    return reply["action"] == want["action"] and set(want["products"]) <= set(reply["products"])
 
 
 def scorecard(results):
     """Three numbers from a list of results. Each result is {"want": ..., "reply": ..., "right": True or False}."""
-    return {"right_percent": 0, "honest_no_percent": 0, "confident_mistakes": 0}
+    right = sum(1 for r in results if r["right"])
+    noes = [r for r in results if r["want"]["action"] == "refuse"]
+    honest = sum(1 for r in noes if r["reply"]["action"] == "refuse")
+    mistakes = sum(1 for r in results if r["reply"]["action"] == "answer" and not r["right"])
+    return {"right_percent": round(100 * right / len(results)) if results else 0,
+    "honest_no_percent": round(100 * honest / len(noes)) if noes else 100,
+    "confident_mistakes": mistakes}
 
 
 def run(gold=None, products=None):
