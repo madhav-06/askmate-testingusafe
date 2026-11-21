@@ -1,0 +1,265 @@
+{
+  "code": "s1-4-ai",
+  "title": "Sprint 1, task 4: Real AI writes the reply",
+  "where": "Real AI makes AskMate sound like a person. Code still decides every fact, so it can never make a product up.",
+  "watch": [
+    "ai.py"
+  ],
+  "next": "Go back to the portal. After your checks, your mentor reviews this one.",
+  "line": {
+    "setup": {
+      "call": "catalogue:load_catalogue",
+      "args": []
+    },
+    "call": "answer:reply",
+    "customers": []
+  },
+  "steps": [
+    {
+      "id": "why-ai",
+      "kind": "say",
+      "title": "What the AI does, and what it never does",
+      "body": "Today AskMate's replies are always right, but they sound like a machine. A real AI can word them like a friendly shop assistant.<br><b>The rule that never bends:</b> code has already found the products and decided what to do. The AI only gets those facts and words the sentence. Then code checks the sentence: if a product's name is missing, AskMate uses its own sentence instead.<br>So the AI can make AskMate sound better, but it can never make up a product or a price.<br>Open <code>ai.py</code> and read <code>write</code>, at the end."
+    },
+    {
+      "id": "find-check",
+      "kind": "hunt",
+      "title": "Find where code checks the AI",
+      "body": "In <code>ai.py</code>, one small function checks every sentence the AI writes before a customer sees it.",
+      "prompt": "What is that function called?",
+      "accept": [
+        "keeps_facts",
+        "keeps_facts()",
+        "def keeps_facts"
+      ],
+      "retry": "Look for the function that says code checks the AI."
+    },
+    {
+      "id": "build",
+      "kind": "write",
+      "title": "Build the request to the AI",
+      "pass": "examples",
+      "file": "ai.py",
+      "at": 38,
+      "body": "Groq and Gemini both understand the same kind of request, the one OpenAI made popular. AskMate already sends it and checks the answer. It only needs the request itself.",
+      "hints": [
+        "Look at the table's last column: it shows the exact dictionary to return. Start with the url.",
+        "Return {\"url\": ..., \"headers\": {...}, \"json\": {...}}. The header value is \"Bearer \" + key, with one space after Bearer.",
+        "Nearly there:  return {\"url\": base_url + \"/chat/completions\", \"headers\": {\"Authorization\": \"Bearer \" + key}, \"json\": {\"model\": model, \"messages\": ____, \"max_tokens\": 400, \"temperature\": 0.2}}"
+      ],
+      "answer": {
+        "code": "def build_request(messages, model, key, base_url):\n    \"\"\"The request to send to the AI: where, who you are, and what to write.\"\"\"\n    return {\n        \"url\": base_url + \"/chat/completions\",\n        \"headers\": {\"Authorization\": \"Bearer \" + key},\n        \"json\": {\"model\": model, \"messages\": messages, \"max_tokens\": 400, \"temperature\": 0.2},\n    }",
+        "why": "Every AI that follows OpenAI's way of talking takes this same shape, so the same code works with Groq and Gemini: only base_url, model and key change. Bearer is how the website knows the key is yours."
+      },
+      "well_done": "Your request is built. Next, read the AI's answer.",
+      "examples": {
+        "call": "ai:build_request",
+        "cases": [
+          {
+            "show": "messages, \"openai/gpt-oss-20b\", \"test-key\", Groq's address",
+            "args": [
+              [
+                {
+                  "role": "user",
+                  "content": "hi"
+                }
+              ],
+              "openai/gpt-oss-20b",
+              "test-key",
+              "https://api.groq.com/openai/v1"
+            ],
+            "want": {
+              "url": "https://api.groq.com/openai/v1/chat/completions",
+              "headers": {
+                "Authorization": "Bearer test-key"
+              },
+              "json": {
+                "model": "openai/gpt-oss-20b",
+                "messages": [
+                  {
+                    "role": "user",
+                    "content": "hi"
+                  }
+                ],
+                "max_tokens": 400,
+                "temperature": 0.2
+              }
+            }
+          },
+          {
+            "show": "messages, \"gemini-2.5-flash\", \"k2\", Gemini's address",
+            "args": [
+              [
+                {
+                  "role": "user",
+                  "content": "taps?"
+                }
+              ],
+              "gemini-2.5-flash",
+              "k2",
+              "https://generativelanguage.googleapis.com/v1beta/openai"
+            ],
+            "want": {
+              "url": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+              "headers": {
+                "Authorization": "Bearer k2"
+              },
+              "json": {
+                "model": "gemini-2.5-flash",
+                "messages": [
+                  {
+                    "role": "user",
+                    "content": "taps?"
+                  }
+                ],
+                "max_tokens": 400,
+                "temperature": 0.2
+              }
+            }
+          }
+        ]
+      },
+      "ask": "Make <code>build_request</code> return the request to the AI, as one dictionary.",
+      "gets": "the messages to send, the model's name, your key, and the AI's address <code>base_url</code>",
+      "gives": "a dictionary with three keys: <code>url</code>, <code>headers</code> and <code>json</code>. The exact one is in the Try it table.",
+      "approach": [
+        "<code>url</code>: the AI's address, <code>base_url</code>, with <code>/chat/completions</code> added at the end.",
+        "<code>headers</code>: a dictionary with one key, <code>Authorization</code>, whose value is <code>\"Bearer \"</code> followed by the key. Mind the space after Bearer.",
+        "<code>json</code>: a dictionary with <code>model</code>, <code>messages</code>, <code>max_tokens</code> 400 and <code>temperature</code> 0.2 (low, so it sticks to the facts).",
+        "Return the three together, in one dictionary."
+      ],
+      "where": "<code>ai.py</code>, the function <code>build_request</code>. Leave the rest of ai.py alone.",
+      "done": "every row of the Try it table is green."
+    },
+    {
+      "id": "read",
+      "kind": "write",
+      "title": "Read the AI's answer",
+      "pass": "examples",
+      "file": "ai.py",
+      "at": 43,
+      "body": "The AI sends back a big dictionary. The sentence AskMate needs is deep inside it.",
+      "hints": [
+        "Follow the keys one at a time: data[\"choices\"] is a list. Which item do you want?",
+        "data[\"choices\"][0][\"message\"][\"content\"] is the sentence. (x or \"\") gives \"\" when x is None. strip() removes the spaces.",
+        "Nearly there:  return (data[\"choices\"][0][\"message\"][\"content\"] or ____).strip()"
+      ],
+      "answer": {
+        "code": "def read_reply(data):\n    \"\"\"The AI's sentence, taken out of the answer it sends back.\"\"\"\n    return (data[\"choices\"][0][\"message\"][\"content\"] or \"\").strip()",
+        "why": "choices is a list of possible replies, and you asked for one, so it is item 0. or \"\" turns None into an empty string, so strip() never crashes, and AskMate then uses its own sentence."
+      },
+      "well_done": "AskMate can talk to a real AI now. It just needs a key.",
+      "examples": {
+        "call": "ai:read_reply",
+        "cases": [
+          {
+            "args": [
+              {
+                "choices": [
+                  {
+                    "message": {
+                      "content": " Yes, we have the Glanza toilet for ₹12,400. "
+                    }
+                  }
+                ]
+              }
+            ],
+            "want": "Yes, we have the Glanza toilet for ₹12,400."
+          },
+          {
+            "args": [
+              {
+                "choices": [
+                  {
+                    "message": {
+                      "content": "Did you mean New Smile or New Gold?"
+                    }
+                  }
+                ]
+              }
+            ],
+            "want": "Did you mean New Smile or New Gold?"
+          },
+          {
+            "args": [
+              {
+                "choices": [
+                  {
+                    "message": {
+                      "content": null
+                    }
+                  }
+                ]
+              }
+            ],
+            "want": ""
+          }
+        ]
+      },
+      "ask": "Make <code>read_reply</code> take the AI's sentence out of the answer it sends back.",
+      "gets": "the AI's answer: <code>{\"choices\": [{\"message\": {\"content\": \" Yes, we have it. \"}}]}</code>",
+      "gives": "just the sentence, with no spaces at the ends: <code>\"Yes, we have it.\"</code>, or <code>\"\"</code> when content is None",
+      "approach": [
+        "<code>data[\"choices\"]</code> is a list. You want its first item: <code>[0]</code>.",
+        "Inside that item, go into <code>[\"message\"]</code>, then <code>[\"content\"]</code>.",
+        "Sometimes content is <code>None</code>. <code>(content or \"\")</code> turns None into an empty string.",
+        "Remove the spaces at the ends with <code>strip()</code>, and return it."
+      ],
+      "where": "<code>ai.py</code>, the function <code>read_reply</code>.",
+      "done": "every row of the Try it table is green."
+    },
+    {
+      "id": "get-key",
+      "kind": "say",
+      "title": "Get a free AI key",
+      "body": "A key is like a password that lets your app use an AI. Both of these are free, with no card:<br>1. <b>Groq</b> (your main one): open <b>console.groq.com</b>, sign in with Google or GitHub, click <b>API Keys</b>, then <b>Create API Key</b>. Copy it. It starts with <code>gsk_</code>.<br>2. <b>Gemini</b> (your backup, if Groq is busy): open <b>aistudio.google.com/apikey</b>, sign in with Google, click <b>Create API key</b>, and copy it.<br>A key is shown only once. Never paste it in chat, in your code, or anywhere on GitHub.<br>Cannot get a key? Tell your mentor. AskMate works without one: it uses its own sentences."
+    },
+    {
+      "id": "key",
+      "kind": "key",
+      "title": "Keep your key safe in .env",
+      "vars": [
+        "GROQ_API_KEY",
+        "GEMINI_API_KEY"
+      ],
+      "body": "1. In VS Code, right-click <code>.env.example</code>, choose <b>Copy</b>, then <b>Paste</b>. Rename the copy to exactly <code>.env</code>.<br>2. Paste your Groq key right after <code>GROQ_API_KEY=</code>, with no spaces. Add your Gemini key the same way if you have one. Save.<br><code>.gitignore</code> already lists <code>.env</code>, so Git never sends it to GitHub. Madhu checks that for real, and this step finishes by itself."
+    },
+    {
+      "id": "try-it",
+      "kind": "say",
+      "title": "Hear the real AI",
+      "body": "Type the command below in your second terminal. The last line says which model wrote the reply.<br>If it says <b>fake</b>, the AI did not answer: check your key in <code>.env</code>. If it says the AI is resting, wait a minute and try again: free keys allow about 30 questions a minute.<br>Try a few questions. Notice that the products and prices never change: only the words do.",
+      "cmd": "python try_ai.py \"Do you have a rimless toilet?\""
+    },
+    {
+      "id": "render-key",
+      "kind": "say",
+      "title": "Give your live app the key",
+      "body": "Your live app on Render cannot see your laptop's <code>.env</code>. Give it the key in Render's own safe place:<br>1. In Render, open your service, then <b>Environment</b>.<br>2. Click <b>Add Environment Variable</b>. Name: <code>GROQ_API_KEY</code>. Value: your key. Add <code>GEMINI_API_KEY</code> the same way if you have one.<br>3. Click <b>Save Changes</b>. Render restarts your app with the key.<br>After you merge this task, your live AskMate replies with real AI."
+    },
+    {
+      "id": "friend",
+      "kind": "friend",
+      "title": "Friend Test",
+      "count": 3,
+      "body": "Ask a friend to type three questions they would really ask a bathroom shop. Do not help them. Real people ask things you never planned for, and that is the point.",
+      "well_done": "Real people ask things you never thought of. Write down any question AskMate got wrong: it is a test for your next sprint."
+    },
+    {
+      "id": "commit",
+      "kind": "git",
+      "git": "committed",
+      "title": "Commit your change",
+      "body": "Type these in your second terminal. Check the list git shows: .env must not be in it.",
+      "cmd": "git add .\ngit commit -m \"Real AI words AskMate's replies\""
+    },
+    {
+      "id": "push",
+      "kind": "git",
+      "git": "pushed",
+      "title": "Send it to GitHub",
+      "body": "Push, and your checks start. GitHub also checks that no key is in your code.",
+      "cmd": "git push"
+    }
+  ]
+}
