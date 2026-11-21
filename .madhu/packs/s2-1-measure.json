@@ -1,0 +1,353 @@
+{
+  "code": "s2-1-measure",
+  "title": "Sprint 2, task 1: How good is AskMate?",
+  "where": "Every real AI product is measured with a set of test questions. From now on, you can prove AskMate got better, in numbers.",
+  "watch": [
+    "eval.py"
+  ],
+  "next": "Go back to the portal. Your checks are running.",
+  "line": {
+    "setup": {
+      "call": "answer:load_products",
+      "args": []
+    },
+    "call": "answer:reply",
+    "customers": []
+  },
+  "steps": [
+    {
+      "id": "why",
+      "kind": "say",
+      "title": "The owner asks: how good is it?",
+      "body": "HomeShine's owner tried AskMate and liked it. Then she asked: <i>\"How often is it right? And does it ever answer wrongly with confidence?\"</i><br>Saying \"it works\" is not an answer. Engineers answer with a <b>test set</b>: questions where the right answer is known, asked again after every change.<br>This task also brings a new <code>answer.py</code> and <code>main.py</code>. You do not need to change them: each task in this sprint adds one small file, and AskMate uses it as soon as it exists."
+    },
+    {
+      "id": "gold",
+      "kind": "hunt",
+      "title": "Look at the test questions",
+      "body": "Open <code>data/gold.json</code>. Each test question says what AskMate should do: <code>answer</code> with a product, <code>ask</code> which one, or <code>refuse</code> (an honest no).",
+      "prompt": "How many test questions are there?",
+      "accept": [
+        "30",
+        "thirty"
+      ],
+      "retry": "Count the lines that start with {\"q\". The file is short: scroll to the end."
+    },
+    {
+      "id": "right",
+      "kind": "write",
+      "title": "Is this reply right?",
+      "pass": "examples",
+      "file": "eval.py",
+      "at": 13,
+      "body": "<b>The problem.</b> To count right answers, AskMate needs a rule for what right means.",
+      "ask": "Make <code>is_right</code> say True when AskMate decided what the test question wants.",
+      "gets": "AskMate's reply, like <code>{\"action\": \"answer\", \"products\": [\"OPC 186\"]}</code>, and the test question's wish, like <code>{\"action\": \"answer\", \"products\": [\"OPC 186\"]}</code>",
+      "gives": "<code>True</code> or <code>False</code>",
+      "approach": [
+        "Right needs two things at once: the same action, and every wanted product named.",
+        "Compare <code>reply[\"action\"]</code> with <code>want[\"action\"]</code>.",
+        "For the products, a set helps: <code>set(want[\"products\"]) &lt;= set(reply[\"products\"])</code> is True when every wanted product is in the reply.",
+        "Return both checks joined with <code>and</code>."
+      ],
+      "where": "<code>eval.py</code>, the function <code>is_right</code>.",
+      "done": "every row of the Try it table is green.",
+      "hints": [
+        "Look at the table's false rows. Which of the two things is wrong in each?",
+        "Two comparisons joined with and. For products, <= between two sets means \"all of these are in that\".",
+        "Nearly there:  return reply[\"action\"] == want[\"action\"] and set(want[\"products\"]) <= set(____[\"products\"])"
+      ],
+      "answer": {
+        "code": "def is_right(reply, want):\n    \"\"\"True when AskMate decided what the test question wants: the same action, and every product it should name.\"\"\"\n    return reply[\"action\"] == want[\"action\"] and set(want[\"products\"]) <= set(reply[\"products\"])",
+        "why": "The action must match, and every wanted product must be in the reply. For a which-one question, AskMate may name more products than the test lists, so we check that the wanted ones are among them, not that the lists are equal."
+      },
+      "well_done": "Now AskMate's answers can be marked right or wrong.",
+      "examples": {
+        "call": "eval:is_right",
+        "cases": [
+          {
+            "show": "answer OPC 186, wants answer OPC 186",
+            "args": [
+              {
+                "action": "answer",
+                "products": [
+                  "OPC 186"
+                ]
+              },
+              {
+                "action": "answer",
+                "products": [
+                  "OPC 186"
+                ]
+              }
+            ],
+            "want": true
+          },
+          {
+            "show": "answer OPC 109, wants answer OPC 186",
+            "args": [
+              {
+                "action": "answer",
+                "products": [
+                  "OPC 109"
+                ]
+              },
+              {
+                "action": "answer",
+                "products": [
+                  "OPC 186"
+                ]
+              }
+            ],
+            "want": false
+          },
+          {
+            "show": "ask OPC 186 + 2 more, wants answer OPC 186",
+            "args": [
+              {
+                "action": "ask",
+                "products": [
+                  "OPC 186",
+                  "OPC 109",
+                  "OPC 180"
+                ]
+              },
+              {
+                "action": "answer",
+                "products": [
+                  "OPC 186"
+                ]
+              }
+            ],
+            "want": false
+          },
+          {
+            "show": "ask 3 basins, wants ask 2 of them",
+            "args": [
+              {
+                "action": "ask",
+                "products": [
+                  "WBSN 277",
+                  "WBSN 278",
+                  "WBSN 284"
+                ]
+              },
+              {
+                "action": "ask",
+                "products": [
+                  "WBSN 277",
+                  "WBSN 278"
+                ]
+              }
+            ],
+            "want": true
+          },
+          {
+            "show": "refuse, wants refuse",
+            "args": [
+              {
+                "action": "refuse",
+                "products": []
+              },
+              {
+                "action": "refuse",
+                "products": []
+              }
+            ],
+            "want": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "card",
+      "kind": "write",
+      "title": "Three numbers for the owner",
+      "pass": "examples",
+      "file": "eval.py",
+      "at": 18,
+      "body": "<b>The problem.</b> A long list of right and wrong is hard to read. The owner wants three numbers.",
+      "ask": "Make <code>scorecard</code> turn the list of results into three numbers.",
+      "gets": "a list of results. Each one is <code>{\"want\": ..., \"reply\": ..., \"right\": True or False}</code>",
+      "gives": "<code>{\"right_percent\": 90, \"honest_no_percent\": 100, \"confident_mistakes\": 1}</code>",
+      "approach": [
+        "<b>right_percent:</b> count the results whose <code>right</code> is True, divide by how many there are, times 100, rounded with <code>round()</code>.",
+        "<b>honest_no_percent:</b> take only the results whose <code>want</code> action is <code>refuse</code>. Of those, what percent did AskMate really refuse? If there are none, use 100.",
+        "<b>confident_mistakes:</b> count the results where AskMate's reply action is <code>answer</code>, but it was not right. This is the worst mistake: a wrong answer said with confidence.",
+        "Return the three in a dictionary with exactly these keys."
+      ],
+      "where": "<code>eval.py</code>, the function <code>scorecard</code>. Leave <code>run</code> and <code>main</code> alone.",
+      "done": "every row of the Try it table is green.",
+      "hints": [
+        "Do one number at a time, and check the table after each save.",
+        "sum(1 for r in results if r[\"right\"]) counts the right ones. A list comprehension picks the refuse ones: [r for r in results if r[\"want\"][\"action\"] == \"refuse\"].",
+        "Nearly there:  mistakes = sum(1 for r in results if r[\"reply\"][\"action\"] == \"answer\" and not r[\"____\"])"
+      ],
+      "answer": {
+        "code": "def scorecard(results):\n    \"\"\"Three numbers from a list of results. Each result is {\"want\": ..., \"reply\": ..., \"right\": True or False}.\"\"\"\n    right = sum(1 for r in results if r[\"right\"])\n    noes = [r for r in results if r[\"want\"][\"action\"] == \"refuse\"]\n    honest = sum(1 for r in noes if r[\"reply\"][\"action\"] == \"refuse\")\n    mistakes = sum(1 for r in results if r[\"reply\"][\"action\"] == \"answer\" and not r[\"right\"])\n    return {\"right_percent\": round(100 * right / len(results)) if results else 0,\n            \"honest_no_percent\": round(100 * honest / len(noes)) if noes else 100,\n            \"confident_mistakes\": mistakes}",
+        "why": "Each number counts something different. Right percent is the overall grade. Honest no checks AskMate never pretends to sell what HomeShine does not. Confident mistakes counts the most harmful error: a wrong answer the customer believes."
+      },
+      "well_done": "You can measure AskMate now.",
+      "examples": {
+        "call": "eval:scorecard",
+        "cases": [
+          {
+            "show": "2 results: 1 right refuse, 1 wrong answer",
+            "args": [
+              [
+                {
+                  "want": {
+                    "action": "answer",
+                    "products": [
+                      "OPC 186"
+                    ]
+                  },
+                  "reply": {
+                    "action": "answer",
+                    "products": [
+                      "OPC 109"
+                    ]
+                  },
+                  "right": false
+                },
+                {
+                  "want": {
+                    "action": "refuse",
+                    "products": []
+                  },
+                  "reply": {
+                    "action": "refuse",
+                    "products": []
+                  },
+                  "right": true
+                }
+              ]
+            ],
+            "want": {
+              "right_percent": 50,
+              "honest_no_percent": 100,
+              "confident_mistakes": 1
+            }
+          },
+          {
+            "show": "4 results: 3 right, a refuse that was answered",
+            "args": [
+              [
+                {
+                  "want": {
+                    "action": "answer",
+                    "products": [
+                      "A"
+                    ]
+                  },
+                  "reply": {
+                    "action": "answer",
+                    "products": [
+                      "A"
+                    ]
+                  },
+                  "right": true
+                },
+                {
+                  "want": {
+                    "action": "ask",
+                    "products": [
+                      "A"
+                    ]
+                  },
+                  "reply": {
+                    "action": "ask",
+                    "products": [
+                      "A",
+                      "B"
+                    ]
+                  },
+                  "right": true
+                },
+                {
+                  "want": {
+                    "action": "refuse",
+                    "products": []
+                  },
+                  "reply": {
+                    "action": "refuse",
+                    "products": []
+                  },
+                  "right": true
+                },
+                {
+                  "want": {
+                    "action": "refuse",
+                    "products": []
+                  },
+                  "reply": {
+                    "action": "answer",
+                    "products": [
+                      "C"
+                    ]
+                  },
+                  "right": false
+                }
+              ]
+            ],
+            "want": {
+              "right_percent": 75,
+              "honest_no_percent": 50,
+              "confident_mistakes": 1
+            }
+          },
+          {
+            "show": "1 right answer, no refuse questions",
+            "args": [
+              [
+                {
+                  "want": {
+                    "action": "answer",
+                    "products": [
+                      "A"
+                    ]
+                  },
+                  "reply": {
+                    "action": "answer",
+                    "products": [
+                      "A"
+                    ]
+                  },
+                  "right": true
+                }
+              ]
+            ],
+            "want": {
+              "right_percent": 100,
+              "honest_no_percent": 100,
+              "confident_mistakes": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "run",
+      "kind": "say",
+      "title": "Measure AskMate",
+      "body": "Type the command below in your second terminal. It asks AskMate all 30 test questions and prints your three numbers, then every question it missed.<br>Write your three numbers down: you compare them after every task from now on. Then add 3 test questions of your own to the end of <code>data/gold.json</code>, from your Friend Test in Sprint 1. Keep the same shape, and the commas between them.",
+      "cmd": "python eval.py"
+    },
+    {
+      "id": "commit",
+      "kind": "git",
+      "git": "committed",
+      "title": "Commit your change",
+      "body": "Type these in your second terminal:",
+      "cmd": "git add .\ngit commit -m \"Measure AskMate with a test set\""
+    },
+    {
+      "id": "push",
+      "kind": "git",
+      "git": "pushed",
+      "title": "Send it to GitHub",
+      "body": "Push, and your checks start on GitHub.",
+      "cmd": "git push"
+    }
+  ]
+}
