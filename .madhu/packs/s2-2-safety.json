@@ -1,0 +1,84 @@
+{
+  "code": "s2-2-safety",
+  "title": "Sprint 2, task 2: Never make anything up",
+  "where": "Real AI products check the AI's words before a customer sees them. This check is why customers can trust AskMate.",
+  "watch": ["safety.py"],
+  "next": "Go back to the portal. Your checks are running.",
+  "line": {"setup": {"call": "answer:load_products", "args": []}, "call": "answer:reply", "customers": []},
+  "steps": [
+    {
+      "id": "why",
+      "kind": "say",
+      "title": "When the AI makes something up",
+      "body": "A real AI writes nice sentences, but sometimes it adds things that are not true: a discount nobody offered, or a product HomeShine never sold. A customer who believes it comes to the shop and is let down.<br>Your rule from Sprint 1 still holds: code decides the facts. Now code also <b>checks</b> the AI's sentence: every price and every product code in it must be one of the facts. If not, the sentence is never shown, and AskMate uses its own.<br>You write that check in <code>safety.py</code>. <code>answer.py</code> already calls it on every reply."
+    },
+    {
+      "id": "predict",
+      "kind": "predict",
+      "title": "Predict first",
+      "body": "<code>PRICE</code> in <code>safety.py</code> is a pattern that matches a price. <code>findall</code> gives every match in a text. What does this print?<br><code>PRICE.findall(\"Only ₹12,400 today\")</code>",
+      "options": ["['12,400']", "[12400]", "['₹12,400']"],
+      "answer": "['12,400']",
+      "run": "from safety import PRICE\nprint(PRICE.findall('Only ₹12,400 today'))",
+      "explain": "findall gives the digits as text, with the comma still in. You turn each one into a whole number yourself."
+    },
+    {
+      "id": "prices",
+      "kind": "write",
+      "title": "Find every price in a sentence",
+      "pass": "examples",
+      "file": "safety.py",
+      "at": 15,
+      "body": "<b>The problem.</b> To check prices, you first need every price a sentence mentions, as numbers.",
+      "ask": "Make <code>prices_in</code> give every price in a text, as whole numbers.",
+      "gets": "a sentence, like <code>\"₹12,400 or Rs 9,900\"</code>",
+      "gives": "a list of numbers: <code>[12400, 9900]</code>. An empty list when there is no price.",
+      "approach": ["<code>PRICE.findall(text)</code> already gives every price's digits as text, like <code>['12,400', '9,900']</code>.", "Each one still has its commas. Remove them with <code>replace(\",\", \"\")</code>.", "Turn each one into a number with <code>int()</code>.", "Return them as a list. A list comprehension does all of this in one line."],
+      "where": "<code>safety.py</code>, the function <code>prices_in</code>.",
+      "done": "every row of the Try it table is green.",
+      "hints": ["Look at what findall gave in your prediction. What is still between you and a number?", "Loop over PRICE.findall(text). For each one, remove the commas, then int() it.", "Nearly there:  return [int(p.replace(\",\", \"\")) for p in PRICE.findall(____)]"],
+      "answer": {"code": "def prices_in(text):\n    \"\"\"Every price written in the text, as whole numbers: '₹12,400 or Rs 9,900' gives [12400, 9900].\"\"\"\n    return [int(p.replace(\",\", \"\")) for p in PRICE.findall(text)]", "why": "findall finds every price, however it is written, and gives its digits as text. Removing the commas lets int() turn each one into a number you can compare."},
+      "well_done": "Every price in a sentence is a number now.",
+      "examples": {"call": "safety:prices_in", "cases": [
+        {"args": ["Yes, the Glanza is ₹12,400."], "want": [12400]},
+        {"args": ["₹12,400 or Rs 9,900"], "want": [12400, 9900]},
+        {"args": ["Only Rs.1250 today"], "want": [1250]},
+        {"args": ["Sorry, we do not sell that."], "want": []}
+      ]}
+    },
+    {
+      "id": "safe",
+      "kind": "write",
+      "title": "Is this sentence safe to show?",
+      "pass": "examples",
+      "file": "safety.py",
+      "at": 24,
+      "body": "<b>The problem.</b> A sentence can mention a price or a product that is not in the facts. That sentence must never reach a customer.",
+      "ask": "Make <code>is_safe</code> say True only when every price and every product code in the text is one of the facts.",
+      "gets": "the AI's sentence, and the facts AskMate gave it, like <code>[{\"code\": \"OPC 186\", \"name\": \"Glanza\", \"price\": \"₹12,400\"}]</code>",
+      "gives": "<code>True</code> (safe to show) or <code>False</code> (made something up)",
+      "approach": ["Collect the allowed prices: run <code>prices_in</code> on each fact's <code>price</code>, and put them all in one set.", "Collect the allowed codes: a set of each fact's <code>code</code>.", "<code>codes_in_text(text)</code> already gives the codes the sentence mentions.", "Safe means: the sentence's prices are all allowed, and its codes are all allowed. Two sets and <code>&lt;=</code> again, like in task 1."],
+      "where": "<code>safety.py</code>, the function <code>is_safe</code>. Leave <code>codes_in_text</code> alone.",
+      "done": "every row of the Try it table is green.",
+      "hints": ["Make two sets of what is allowed, from the facts. Then check the sentence against them.", "allowed_prices: a set, then update() it with prices_in(f[\"price\"]) for each fact. allowed_codes: {f[\"code\"] for f in facts}.", "Nearly there:  return set(prices_in(text)) <= allowed_prices and set(codes_in_text(text)) <= ____"],
+      "answer": {"code": "def is_safe(text, facts):\n    \"\"\"True when every price and every product code in the text is one of the facts.\"\"\"\n    allowed_prices = set()\n    for f in facts:\n        allowed_prices.update(prices_in(f[\"price\"]))\n    allowed_codes = {f[\"code\"] for f in facts}\n    return set(prices_in(text)) <= allowed_prices and set(codes_in_text(text)) <= allowed_codes", "why": "The facts are the only truth. Anything the sentence says that is not in them, a price or a product, was made up. <= between sets is True when everything on the left is also on the right."},
+      "well_done": "No made-up price or product can reach a customer now.",
+      "examples": {"call": "safety:is_safe", "cases": [
+        {"show": "honest sentence", "args": ["We have the Glanza (OPC 186) for ₹12,400.", [{"code": "OPC 186", "name": "Glanza", "price": "₹12,400"}]], "want": true},
+        {"show": "a made-up discount", "args": ["The Glanza is only ₹9,999 today!", [{"code": "OPC 186", "name": "Glanza", "price": "₹12,400"}]], "want": false},
+        {"show": "a made-up product", "args": ["Also try the Glanza Gold (OPC 999).", [{"code": "OPC 186", "name": "Glanza", "price": "₹12,400"}]], "want": false},
+        {"show": "no prices or codes at all", "args": ["Sorry, HomeShine does not sell that.", []], "want": true},
+        {"show": "two products, both real", "args": ["Did you mean New Smile (₹1,250) or New Gold (₹1,350)?", [{"code": "WBSN 277", "name": "New Smile", "price": "₹1,250"}, {"code": "WBSN 278", "name": "New Gold", "price": "₹1,350"}]], "want": true}
+      ]}
+    },
+    {
+      "id": "liar",
+      "kind": "say",
+      "title": "Catch a lying AI",
+      "body": "Type the command below. It shows an honest AI and a lying one. Your check lets the honest one through, and blocks the lie.",
+      "cmd": "python try_liar.py"
+    },
+    {"id": "commit", "kind": "git", "git": "committed", "title": "Commit your change", "body": "Type these in your second terminal:", "cmd": "git add .\ngit commit -m \"Block anything the AI makes up\""},
+    {"id": "push", "kind": "git", "git": "pushed", "title": "Send it to GitHub", "body": "Push, and your checks start on GitHub.", "cmd": "git push"}
+  ]
+}
