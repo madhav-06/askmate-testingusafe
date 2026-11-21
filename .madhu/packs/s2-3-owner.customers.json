@@ -1,0 +1,206 @@
+[
+ {
+  "name": "Meera",
+  "ask": "Do you have Glanza?",
+  "wanted": "Glanza, ₹12,400",
+  "want": {
+   "must": [
+    "12,400"
+   ],
+   "action": "answer",
+   "products": [
+    "OPC 186"
+   ]
+  }
+ },
+ {
+  "name": "Arun",
+  "ask": "rimless toilet",
+  "wanted": "Which one? There are five rimless toilets",
+  "want": {
+   "action": "ask",
+   "products": [
+    "OPC 122",
+    "WPAN 117"
+   ]
+  }
+ },
+ {
+  "name": "Kiran",
+  "ask": "I need a commode",
+  "wanted": "Which one? Commode means toilet, and there are many",
+  "want": {
+   "action": "ask",
+   "products": [
+    "OPC 109",
+    "WPAN 130"
+   ]
+  }
+ },
+ {
+  "name": "Divya",
+  "ask": "kitchen sink",
+  "wanted": "Which one? It should name Plato and Swade",
+  "want": {
+   "must": [
+    "plato",
+    "swade"
+   ],
+   "action": "ask"
+  }
+ },
+ {
+  "name": "Sameer",
+  "ask": "quartz sink",
+  "wanted": "Kimo quartz sink, ₹10,750",
+  "want": {
+   "must": [
+    "10,750"
+   ],
+   "action": "answer"
+  }
+ },
+ {
+  "name": "Nisha",
+  "ask": "18 by 14 basin",
+  "wanted": "Which one? New Smile or New Gold, both 18x14",
+  "want": {
+   "must": [
+    "new smile",
+    "new gold"
+   ],
+   "action": "ask"
+  }
+ },
+ {
+  "name": "Ravi",
+  "ask": "16 x 12 wash basin",
+  "wanted": "Cute wash basin, ₹1,450",
+  "want": {
+   "must": [
+    "1,450"
+   ],
+   "action": "answer"
+  }
+ },
+ {
+  "name": "Fatima",
+  "ask": "bath tub",
+  "wanted": "The acrylic bathtub, ₹13,250",
+  "want": {
+   "must": [
+    "13,250"
+   ],
+   "action": "answer"
+  }
+ },
+ {
+  "name": "Gopal",
+  "ask": "angle cock",
+  "wanted": "Aqua angle cock, ₹640",
+  "want": {
+   "must": [
+    "₹640"
+   ],
+   "action": "answer"
+  }
+ },
+ {
+  "name": "Lakshmi",
+  "ask": "faucet with flexible spout",
+  "wanted": "Flora sink cock, ₹2,280",
+  "want": {
+   "must": [
+    "2,280"
+   ],
+   "action": "answer"
+  }
+ },
+ {
+  "name": "Arjun",
+  "ask": "WC for kids",
+  "wanted": "Kidz toilet, ₹9,500",
+  "want": {
+   "must": [
+    "9,500"
+   ],
+   "action": "answer"
+  }
+ },
+ {
+  "name": "Priya",
+  "ask": "Do you sell tiles?",
+  "wanted": "An honest no",
+  "want": {
+   "must": [
+    "sorry"
+   ],
+   "action": "refuse"
+  }
+ },
+ {
+  "name": "Hari",
+  "ask": "opc-180",
+  "wanted": "Stylo, ₹9,900: codes still work",
+  "want": {
+   "must": [
+    "9,900"
+   ],
+   "action": "answer"
+  }
+ },
+ {
+  "name": "Vikram",
+  "ask": "the cheapest wall hung toilet",
+  "wanted": "Alitis, ₹4,400, without being asked which one",
+  "want": {
+   "must": [
+    "4,400"
+   ],
+   "action": "answer",
+   "products": [
+    "WPAN 130"
+   ]
+  }
+ },
+ {
+  "name": "Suresh",
+  "ask": "Can I get a discount on Glanza?",
+  "wanted": "The owner decides discounts: AskMate passes it on",
+  "want": {
+   "action": "escalate"
+  }
+ },
+ {
+  "name": "Rekha",
+  "ask": "best price for 10 basins",
+  "wanted": "Passed to the owner",
+  "want": {
+   "action": "escalate"
+  }
+ },
+ {
+  "name": "Imran",
+  "ask": "bulk order of 50 taps",
+  "wanted": "Passed to the owner",
+  "want": {
+   "action": "escalate"
+  }
+ },
+ {
+  "name": "Geetha",
+  "ask": "Any offer on bathtubs?",
+  "wanted": "Passed to the owner",
+  "want": {
+   "action": "escalate"
+  }
+ },
+ {
+  "name": "Babu",
+  "ask": "what is your last price for Amaze",
+  "wanted": "Passed to the owner: last price means bargaining",
+  "want": {
+   "action": "escalate"
+  }
+ }
+]

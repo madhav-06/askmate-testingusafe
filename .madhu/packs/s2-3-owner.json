@@ -1,0 +1,113 @@
+{
+  "code": "s2-3-owner",
+  "title": "Sprint 2, task 3: Bargaining goes to the owner",
+  "where": "A good assistant knows what it may decide and what a person must decide. Prices and deals are the owner's.",
+  "watch": [
+    "owner.py"
+  ],
+  "next": "Go back to the portal. Your checks are running.",
+  "line": {
+    "setup": {
+      "call": "answer:load_products",
+      "args": []
+    },
+    "call": "answer:reply",
+    "customers": []
+  },
+  "steps": [
+    {
+      "id": "line-up",
+      "kind": "talk",
+      "title": "Customers who want to bargain",
+      "body": "In India almost every customer asks for a better price. AskMate must never promise a discount: only HomeShine's owner can. It should say the owner will reply, and keep the question for her.<br><b>Do this.</b> Click the button. Five customers want to bargain, and AskMate treats them like product questions."
+    },
+    {
+      "id": "bargain",
+      "kind": "write",
+      "title": "Spot a customer who wants to bargain",
+      "file": "owner.py",
+      "at": 7,
+      "goal": 19,
+      "body": "<b>The problem.</b> <code>wants_bargain</code> always says False, so no question ever reaches the owner.",
+      "ask": "Fill the <code>BARGAIN</code> list with bargaining words, and make <code>wants_bargain</code> say True when a question uses one.",
+      "gets": "a customer's question, like <code>\"Can I get a discount on Glanza?\"</code>",
+      "gives": "<code>True</code> for bargaining, <code>False</code> for everything else. <code>\"the cheapest wall hung toilet\"</code> is a product question, so it is False.",
+      "approach": [
+        "Read the five unhappy customers. Write down the bargaining words they use: discount, offer, best price, last price, bulk.",
+        "Put those words and phrases in the <code>BARGAIN</code> list. Phrases are fine: <code>\"best price\"</code>.",
+        "In <code>wants_bargain</code>, make the question small letters, then check if any phrase in <code>BARGAIN</code> is inside it. <code>any(...)</code> does this in one line.",
+        "Careful: do not add <code>cheap</code> or <code>cheapest</code>. A customer asking for the cheapest product is not bargaining."
+      ],
+      "where": "<code>owner.py</code>: the line <code>BARGAIN = []</code> (keep it on one line) and the function <code>wants_bargain</code>. Leave <code>note</code> and <code>inbox</code> alone.",
+      "done": "all 19 customers are happy: the five bargainers go to the owner, and everyone else still gets their product.",
+      "hints": [
+        "Which words appear in the five bargaining questions, but not in normal product questions?",
+        "BARGAIN is a list of strings. In the function, make the question small letters first, then ask if any phrase in BARGAIN is inside it.",
+        "Nearly there:  return any(phrase in q for phrase in ____)"
+      ],
+      "answer": {
+        "code": "BARGAIN = [\"discount\", \"offer\", \"best price\", \"best rate\", \"last price\", \"lowest price\", \"bulk\", \"negotiate\", \"wholesale\"]\n\n\ndef wants_bargain(question):\n    \"\"\"True when the customer is asking to bargain: a discount, an offer, a best or last price, or a bulk deal.\"\"\"\n    q = question.lower()\n    return any(phrase in q for phrase in BARGAIN)",
+        "why": "Small letters first, so DISCOUNT and Discount are caught too. any() is True as soon as one phrase is found. Phrases like best price are safer than single words: best alone would catch best basin for a small bathroom."
+      },
+      "examples": {
+        "call": "owner:wants_bargain",
+        "cases": [
+          {
+            "args": [
+              "Can I get a discount on Glanza?"
+            ],
+            "want": true
+          },
+          {
+            "args": [
+              "what is your last price for Amaze"
+            ],
+            "want": true
+          },
+          {
+            "args": [
+              "bulk order of 50 taps"
+            ],
+            "want": true
+          },
+          {
+            "args": [
+              "the cheapest wall hung toilet"
+            ],
+            "want": false
+          },
+          {
+            "args": [
+              "Do you have Glanza?"
+            ],
+            "want": false
+          }
+        ]
+      },
+      "well_done": "Bargaining goes to the owner, and product questions still get answers."
+    },
+    {
+      "id": "owner-page",
+      "kind": "say",
+      "title": "See the owner's page",
+      "body": "The owner reads these questions on <code>/owner</code>. It is protected by a secret token.<br>1. In <code>.env</code>, add a line <code>ADMIN_TOKEN=</code> followed by a long secret of your own (20 letters or more). Save. If you have no <code>.env</code> yet, copy <code>.env.example</code> to <code>.env</code> first.<br>2. Restart your app (Ctrl+C, then run the command below), ask <code>any discount on Glanza?</code> in the chat, then open <code>http://127.0.0.1:8001/owner?token=</code> followed by your secret.<br>3. On Render, add <code>ADMIN_TOKEN</code> in Environment the same way.",
+      "cmd": "python -m uvicorn main:app --reload --port 8001"
+    },
+    {
+      "id": "commit",
+      "kind": "git",
+      "git": "committed",
+      "title": "Commit your change",
+      "body": "Type these in your second terminal:",
+      "cmd": "git add .\ngit commit -m \"Send bargaining to the owner\""
+    },
+    {
+      "id": "push",
+      "kind": "git",
+      "git": "pushed",
+      "title": "Send it to GitHub",
+      "body": "Push, and your checks start on GitHub.",
+      "cmd": "git push"
+    }
+  ]
+}
