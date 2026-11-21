@@ -36,13 +36,17 @@ def fake_reply(action, facts):
 
 
 def build_request(messages, model, key, base_url):
-    """The request to send to the AI: where, who you are, and what to write. You build this in Sprint 1."""
-    return {}
+    """The request to send to the AI: where, who you are, and what to write."""
+    return {
+    "url": base_url + "/chat/completions",
+    "headers": {"Authorization": "Bearer " + key},
+    "json": {"model": model, "messages": messages, "max_tokens": 400, "temperature": 0.2},
+    }
 
 
 def read_reply(data):
-    """The AI's sentence, taken out of the answer it sends back. You write this in Sprint 1."""
-    return ""
+    """The AI's sentence, taken out of the answer it sends back."""
+    return (data["choices"][0]["message"]["content"] or "").strip() if "choices" in data and data["choices"] else ""
 
 
 def instructions(action, facts):
